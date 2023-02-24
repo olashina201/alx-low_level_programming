@@ -1,5 +1,23 @@
 #include <math.h>
-#include "stdio.h"
+#include "main.h"
+
+/**
+ * power - exponents
+ * @base: base
+ * @exp: exponent
+ * Return: result (int)
+ */
+
+int  power(int base, int exp)
+{
+	int i, num;
+
+	num = 1;
+	for (i = 0; i < exp; ++i)
+		num *= base;
+
+	return (num);
+}
 
 /**
  * print_number - prints an integer
@@ -9,19 +27,41 @@
 
 void print_number(int n)
 {
-        unsigned int k = n;
+	int negative = 0;
+	int digit;
+	int divisor;
+	int begin = 0;
+	int place = 10;
 
 	if (n < 0)
 	{
-		n *= -1;
-		k = n;
-		_putchar('-');
+		negative = 1;
+		n = n * -1;
 	}
-	k /= 10;
-	if (k != 0)
+	while (place >= 0)
 	{
-	        print_number(k);
-		_putchar((unsigned int) n % 10 + '0');
+		divisor = power(10, place);
+		digit = ((n / divisor) % 10);
+		if (digit == 0 && begin == 0)
+		{
+			place--;
+		}
+		else if (digit != 0 && begin == 0)
+		{
+			begin = 1;
+			if (negative == 1)
+				_putchar('-');
+			_putchar('0' + digit);
+			place--;
+		}
+		else
+		{
+			_putchar('0' + digit);
+			place--;
+		}
 	}
-	          
+	if (digit == 0 && divisor == 1)
+	{
+		_putchar(48);
+	}
 }
