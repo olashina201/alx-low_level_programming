@@ -1,42 +1,89 @@
 #include "main.h"
 
 /**
- * infinite_add - adds two numbers
- * @n1: first number to add
- * @n2: second number to add
- * @r: buffer to store the result
- * @size_r: size of the buffer
- *
- * Return: pointer to the result or 0 if buffer is too small
+ * *infinite_add - add two integers stored as strings
+ * @n1: first integer string to add
+ * @n2: second integer string to add
+ * @r: array to store resulting string in
+ * @size_r: size of array
+ * Return: The summed string in r, return 0 if too small
+ * for result
  */
+
 char *infinite_add(char *n1, char *n2, char *r, int size_r)
 {
-	int len1, len2, i, j, k, sum, carry = 0;
+	int carry = 0, index = 0, index2;
+	char *s1 = n1, s2 = n2;
 
-	for (len1 = 0; n1[len1]; len1++)
-		;
-	for (len2 = 0; n2[len2]; len2++)
-		;
-	if (len1 > size_r || len2 > size_r)
-		return (0);
-	for (i = len1 - 1, j = len2 - 1, k = size_r - 1; k >= 0 && (i >= 0 || j >= 0); i--, j--, k--)
+	while (s1 != 0)
+		s1++;
+	while (s2 != 0)
+		s2++;
+	size_r--;
+	r[size_r] = 0;
+	s1--;
+	s2--;
+	while (s2 != n2 - 1 && s1 != n1 - 1)
 	{
-		sum = carry;
-		if (i >= 0)
-			sum += n1[i] - '0';
-		if (j >= 0)
-			sum += n2[j] - '0';
-		carry = sum / 10;
-		r[k] = (sum % 10) + '0';
-	}
-	if (carry)
-	{
-		if (size_r == len1 + len2 + 1)
+		r[index] = *s2 - '0' + *s1 + carry;
+		carry = 0;
+		if (r[index] > '9')
+		{
+			carry++;
+			r[index] -= 10;
+		}
+		index++;
+		s2--;
+		s1--;
+		if (size_r == index &&
+				(s1 != n1 - 1 || s2 != n2 - 1 || carry == 1))
 			return (0);
-		r[0] = carry + '0';
-		return (r);
 	}
-	if (size_r == len1 + len2)
-		return (0);
-	return (&r[k + 1]);
+	while (s1 != n1 - 1)
+	{
+		r[index] = *s1 + carry;
+		carry = 0;
+		if (r[index] > '9')
+		{
+			carry = 1;
+			r[index] -= 10;
+		}
+		s1--;
+		index++;
+		if (size_r == index && (s1 != n1 - 1 || carry == 1))
+			return (0);
+	}
+	while (s2 != n2 - 1)
+	{
+		r[index] = *s2 + carry;
+		carry = 0;
+		if (r[index] > '9')
+		{
+			carry = 1;
+			r[index] -= 10;
+		}
+		s2--;
+		index++;
+		if (size_r == index && (s2 != n2 - 1 || carry == 1))
+			return (0);
+	}
+	if (carry == 1)
+	{
+		r[index] = '1';
+		r[index + 1] = 0;
+	}
+	else
+	{
+		r[index--] = 0;
+	}
+	index2 = 0;
+	while (index2 <= index)
+	{
+		carry = r[index];
+		r[index] = r[index2];
+		r[index2] = carry;
+		index--;
+		index2++;
+	}
+	return (r);
 }
