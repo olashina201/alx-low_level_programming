@@ -3,27 +3,64 @@
 #include <stdlib.h>
 
 /**
-  * main - Prints the multiplication of two args numbers
-  * @argc: argument count
-  * @argv: argument vector
-  *
-  * Return: Always zero
-  */
+ * is_number - checks to see if input is a number
+ * @s: input to check for numberhood
+ * Return: 1 if it is a number, 0 if not
+ */
+
+int is_number(char *s)
+{
+	int i;
+
+	i = 0;
+	while (*(s + i) != '\0')
+	{
+		if (*(s + i) >= '0' && *(s + i) <= '9')
+		{
+			i++;
+		}
+		else
+		{
+			return (0);
+		}
+	}
+	return (1);
+}
+
+/**
+ * main - prints the sum of positive numbers
+ * @argc: number of arguments
+ * @argv: array of arguments
+ * Return: (0)
+ */
+
 int main(int argc, char *argv[])
 {
-	int n1 = 0, n2 = 0;
+	int i, sum, is_num;
 
-	if (argc == 3)
+	sum = 0;
+	if (argc == 1)
 	{
-		n1 = atoi(argv[1]);
-		n2 = atoi(argv[2]);
-		printf("%d\n", n1 * n2);
+		printf("0\n");
 	}
-	else
+	else if (argc > 1)
 	{
-		printf("Error\n");
-		return (1);
+		i = 1;
+		while (i < argc)
+		{
+			is_num = is_number(argv[i]);
+			if (is_num == 1)
+			{
+				sum += atoi(argv[i]);
+			}
+			else
+			{
+				printf("Error\n");
+				return (1);
+			}
+			i++;
+		}
+		printf("%d\n", sum);
 	}
-
 	return (0);
 }
