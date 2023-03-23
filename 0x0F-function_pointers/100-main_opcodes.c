@@ -1,39 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <udis86.h>
 
 /**
-  * main - ...
-  * @argc: ...
-  * @argv: ...
-  *
-  * Return: ...
-  */
-int main(int argc, char *argv[])
+ * print_opcodes - prints the opcodes of the main function
+ * @n: number of bytes to print
+ */
+void print_opcodes(int n)
 {
-	ud_t ud_obj;
-	int val = 0, i = 0;
+        unsigned char *main_opcodes = (unsigned char *)main;
+        int i;
 
-	if (argc == 2)
-	{
-		val = atoi(argv[1]);
+        for (i = 0; i < n; i++) {
+                printf("%02x ", main_opcodes[i]);
+        }
+        printf("\n");
+}
 
-		if (val < 0)
-		{
-			printf("Error\n");
-			exit(2);
-		}
+/**
+ * main - prints its own opcodes
+ * @argc: number of arguments
+ * @argv: array of arguments
+ * Return: 0 on success, 1 if the number of arguments is incorrect, 2 if the
+ * number of bytes is negative
+ */
+int main(int argc, char **argv)
+{
+        int n;
 
-		ud_unit(&ud_obj);
-		ud_set_input_buffer(&ud_obj, argv[1], val);
-		ud_set_mode(&ud_obj, 64);
-		ud_set_syntax(&ud_obj, UD_SYN_INTEL);
+        if (argc != 2) {
+                printf("Error\n");
+                return (1);
+        }
 
-		while (ud_disassemble(&ud_obj))
-		{
-			printf("\t%s\n", ud_insn_hex(&ud_obj));
-		}
-	}
+        n = atoi(argv[1]);
 
-	return (0);
+        if (n < 0) {
+                printf("Error\n");
+                return (2);
+        }
+
+        print_opcodes(n);
+
+        return (0);
 }
