@@ -1,109 +1,71 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdarg.h>
-
-#define USAGE_STATUS 97
-#define READ_FAIL_STATUS 98
-#define WRITE_FAIL_STATUS 99
-#define CLOSE_FAIL_STATUS 100
-#define BUFFER_SIZE 1024
-#define WFILE_MODE 0664
+#include "main.h"
 
 /**
- * close_all - closes all opened file streams with error handling
- * @count: the number of passed file descriptors
- */
-void close_all(int count, ...)
+ * __exit - prints error messages and exits with exit value
+ * @error: num is either exit value or file descriptor
+ * @s: str is a name, either of the two filenames
+ * @fd: file descriptor
+ * Return: 0 on success
+ **/
+int __exit(int error, char *s, int fd)
 {
-	va_list ap;
-
-	va_start(ap, count);
-	for (; count > 0; count--)
+	switch (error)
 	{
-		int fd = va_arg(ap, int);
-
-		if (close(fd))
-		{
-			dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
-			exit(CLOSE_FAIL_STATUS);
-		}
-	}
-	va_end(ap);
-}
-
-/**
- * copy_content - copies content from @fd_src to @fd_dest file descriptors
- * @fd_dest: the file descriptor of the destination file
- * @fd_src: the file descriptor of the source file
- * @file_dest: the destination file name
- * @file_src: the source file name
- */
-void copy_content(int fd_dest, int fd_src, char *file_src, char *file_dest)
-{
-	char buffer[BUFFER_SIZE];
-	int bytesRead;
-
-	do {
-		memset(buffer, 0, BUFFER_SIZE);
-		bytesRead = read(fd_src, buffer, BUFFER_SIZE);
-		if (bytesRead < 0)
-		{
-			dprintf(STDERR_FILENO, "Can't read from file %s\n", file_src);
-			exit(READ_FAIL_STATUS);
-		}
-		if (fd_dest < 0 || write(fd_dest, buffer, bytesRead) < 0)
-		{
-			close_all(1, fd_src);
-			dprintf(STDERR_FILENO, "Can't write to %s\n", file_dest);
-			exit(WRITE_FAIL_STATUS);
-		}
-	} while (bytesRead > 0);
-}
-
-/**
- * main - a program to copy content of file to another one
- * @argc: number of arguments
- * @argv: passed arguments as cstring array
- * Description:
- * arguments must to be <file_from> <file_to>
- *
- * Return: status code 0 on success,
- * returns 97 on invalid args,
- * if can not read from <file_from> returns 98
- */
-int main(int argc, char **argv)
-{
-	char *file_from, *file_to;
-	int fd_from, fd_to;
-
-	/* check args */
-	if (argc != 3)
-	{
+	case 97:
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(USAGE_STATUS);
+		exit(error);
+	case 98:
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", s);
+		exit(error);
+	case 99:
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", s);
+		exit(error);
+	case 100:
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		exit(error);
+	default:
+		return (0);
 	}
-	file_from = argv[1];
-	file_to = argv[2];
+}
 
-	/* open src file */
-	fd_from = open(file_from, O_RDONLY);
-	if (fd_from < 0)
+/**
+ * main - copies one file to another
+ * @argc: should be 3 (./a.out copyfromfile copytofile)
+ * @argv: first is file to copy from (fd_1), second is file to copy to (fd_2)
+ * Return: 0 (success), 97-100 (exit value errors)
+ */
+int main(int argc, char *argv[])
+{
+	int fd_1, fd_2, n_read, n_wrote;
+	char *buffer[1024];
+
+	if (argc != 3)
+		__exit(97, NULL, 0);
+
+	/*sets file descriptor for copy-to file*/
+	fd_2 = open(argv[2], O_CREAT | O_TRUNC | O_WRONLY, 0664);
+	if (fd_2 == -1)
+		__exit(99, argv[2], 0);
+
+	/*sets file descriptor for copy-from file*/
+	fd_1 = open(argv[1], O_RDONLY);
+	if (fd_1 == -1)
+		__exit(98, argv[1], 0);
+
+	/*reads original file as long as there's more than 0 to read*/
+	/*copies/writes contents into new file */
+	while ((n_read = read(fd_1, buffer, 1024)) != 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
-		exit(READ_FAIL_STATUS);
+		if (n_read == -1)
+			__exit(98, argv[1], 0);
+
+		n_wrote = write(fd_2, buffer, n_read);
+		if (n_wrote == -1)
+			__exit(99, argv[2], 0);
 	}
 
-	/* open dest file */
-	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC, WFILE_MODE);
-	/* copy content */
-	copy_content(fd_to, fd_from, file_from, file_to);
-
-	/* close and clean */
-	close_all(2, fd_to, fd_from);
+	close(fd_2) == -1 ? (__exit(100, NULL, fd_2)) : close(fd_2);
+	close(fd_1) == -1 ? (__exit(100, NULL, fd_1)) : close(fd_1);
 	return (0);
 }
 
