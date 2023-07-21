@@ -1,69 +1,31 @@
 #include "main.h"
-#include <stdlib.h>
-
-
-/**
- * _strlen - return the length of a string.
- * @str: a const pointer to the string.
- *
- * Return: The string length.
- */
-unsigned int _strlen(char const *str)
-{
-	unsigned int i;
-
-	for (i = 0; str[i] != '\0'; i++)
-		;
-	return (i);
-}
+#include <string.h>
 
 /**
- * _pow - return the power of a number.
- * @a: the number to be raised.
- * @b: the exponent
+ * binary_to_uint - convert binary number to unsigned int
+ * @b: the binary number as a cstring
+ * Description:
+ * NOTE: the limit of @b length is the maximum positive signed int
+ * otherwise returns zero
  *
- * Return: The power of a number.
- */
-unsigned int _pow(unsigned int a, unsigned int b)
-{
-	unsigned int i, pow = 1;
-
-	if (b == 0)
-		return (1);
-
-	for (i = 0; i < b; i++)
-		pow *= a;
-
-	return (pow);
-}
-
-/**
- * binary_to_uint - Converts a binary number to an unsigned int.
- * @b: A pointer to a string of 0 and 1 chars.
+ * Only 0s and 1s chars allowed any other chars returns zero
  *
- * Return: the converted number, or 0 if there is 1 or more charse
- *         in the string b that is not 0 or 1.
+ * Return: the decimal form of the converted number otherwise zero
  */
 unsigned int binary_to_uint(const char *b)
 {
-	unsigned int i, j, len, sum, basePwr;
+	unsigned int i, num = 0, field;
 
 	if (!b)
-		return (0);
+		return (num);
 
-	for (i = 0; b[i] != '\0'; i++)
-	{
-		if (b[i] != '0' && b[i] != '1')
+	for (i = strlen(b) - 1, field = 1; (signed int)i >= 0; i--, field *= 2)
+		if (b[i] == '1')
+			num += field;
+		else if (b[i] == '0')
+			continue;
+		else
 			return (0);
-	}
-
-	len = _strlen(b);
-	sum = 0;
-	for (i = 0, j = len; i < len; i++, j--)
-	{
-		basePwr = _pow(2, j - 1);
-		sum += (((b[i]) - '0') * basePwr);
-	}
-	return (sum);
+	return (num);
 }
 
